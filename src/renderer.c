@@ -416,7 +416,17 @@ void blendPixel(i32 x, i32 y, color color, f32 z)
 
 void setCamera(camera camera)
 {
-	// TODO set clipping planes
+	f32 sine_horizontal = sinf(camera.horizontal_fov/2.f);
+	f32 cosine_horizontal = cosf(camera.horizontal_fov/2.f);
+	f32 half_vertical_fov = atanf(camera.aspect_ratio*sine_horizontal/cosine_horizontal);
+	f32 sine_vertical = sinf(half_vertical_fov);
+	f32 cosine_vertical = cosf(half_vertical_fov);
+	gRenderer.clipping_planes[0] = (plane){0.f, 0.f, 1.f, camera.z_near};
+	gRenderer.clipping_planes[1] = (plane){0.f, 0.f, -1.f, -camera.z_far};
+	gRenderer.clipping_planes[2] = (plane){cosine_horizontal, 0.f, sine_horizontal, 0.f};
+	gRenderer.clipping_planes[3] = (plane){-cosine_horizontal, 0.f, sine_horizontal, 0.f};
+	gRenderer.clipping_planes[4] = (plane){0.f, cosine_vertical, sine_vertical, 0.f};
+	gRenderer.clipping_planes[5] = (plane){0.f, -cosine_vertical, sine_vertical, 0.f};
 	gRenderer.camera_transform = CameraTransform(camera);
 	gRenderer.view_transform = CameraViewTransform(camera);
 }

@@ -36,7 +36,7 @@ typedef struct
 	f32 *z_buffer;
 
 	// Used for clipping
-	plane clipping_planes[6]; // left, right, up, down, near, far
+	plane clipping_planes[6]; // near, far, left, right, up, down
 	TriangleStack front_stack;
 	TriangleStack back_stack;
 
