@@ -1,6 +1,6 @@
 CC := gcc
 ERRFLAGS := -Wall -Wextra -Wpedantic -Werror
-LIBS := -lSDL2 -lSDL2_image -lSDL2_mixer -llua5.4 -lm
+LIBS := -lSDL2 -lSDL2_image -lm
 OPT := -O3
 CCFLAGS := -std=c11
 
