@@ -13,12 +13,6 @@ typedef struct
 
 typedef struct
 {
-	vec4 p1, p2, p3;
-	vec2 uv1, uv2, uv3;
-} Triangle;
-
-typedef struct
-{
 	i32 capacity;
 	i32 n_triangles;
 	Triangle *triangles;

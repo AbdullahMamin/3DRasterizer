@@ -49,6 +49,12 @@ typedef struct
       f32 nx, ny, nz, d;
 } plane;
 
+typedef struct
+{
+	vec4 p1, p2, p3;
+	vec2 uv1, uv2, uv3;
+} Triangle;
+
 vec2 Vec2(f32 x, f32 y);
 vec2 vec2Add(vec2 v1, vec2 v2);
 vec2 vec2Subtract(vec2 v1, vec2 v2);
