@@ -7,6 +7,12 @@
 
 typedef struct
 {
+	u32 width, height;
+	color *pixels;
+} Texture;
+
+typedef struct
+{
 	bool open;
 	i32 width, height;
 	SDL_Window *window;
@@ -19,6 +25,11 @@ typedef struct
 	mat4 camera_transform;
 	mat4 view_transform;
 } Renderer;
+
+// Loads bmp files
+Texture loadTexture(const char *file_path);
+void destroyTexture(Texture texture);
+color getTexel(const Texture texture, vec2 uv);
 
 bool initRenderer(const char *title, i32 width, i32 height, i32 scale);
 void closeRenderer(void);
@@ -33,5 +44,6 @@ void setCamera(camera camera);
 
 // All triangles drawn must have clockwise winding
 void rasterizeFlatTriangle(vec4 p1, vec4 p2, vec4 p3, color color);
+void rasterizeTexturedTriangle(vec4 p1, vec4 p2, vec4 p3, vec2 uv1, vec2 uv2, vec2 uv3, const Texture texture);
 
 #endif // RENDERER_H

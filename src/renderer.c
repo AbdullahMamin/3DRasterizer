@@ -2,6 +2,98 @@
 
 static Renderer gRenderer;
 
+Texture loadTexture(const char *file_path)
+{
+	Texture texture = (Texture){0, 0, NULL};
+	u32 data_offset;
+	u16 bit_depth;
+	FILE *file = fopen(file_path, "rb");
+	if (!file)
+	{
+		return texture;
+	}
+
+	if (fgetc(file) != 'B' || fgetc(file) != 'M')
+	{
+		fclose(file);
+		return texture;
+	}
+
+	fseek(file, 0x0A, SEEK_SET);
+	if (fread(&data_offset, sizeof(data_offset), 1, file) != 1)
+	{
+		fclose(file);
+		return texture;
+	}
+
+	fseek(file, 0x12, SEEK_SET);
+	if (fread(&texture.width, sizeof(texture.width), 1, file) != 1)
+	{
+		fclose(file);
+		return texture;
+	}
+
+	fseek(file, 0x16, SEEK_SET);
+	if (fread(&texture.height, sizeof(texture.height), 1, file) != 1)
+	{
+		fclose(file);
+		return texture;
+	}
+
+	fseek(file, 0x1C, SEEK_SET);
+	if (fread(&bit_depth, sizeof(bit_depth), 1, file) != 1)
+	{
+		fclose(file);
+		return texture;
+	}
+	if (bit_depth != 32)
+	{
+		printf("BMP incorrect depth: got %u instead of 32\n", bit_depth);
+		fclose(file);
+		return texture;
+	}
+
+	texture.pixels = malloc(texture.width*texture.height*sizeof(*texture.pixels));
+	if (!texture.pixels)
+	{
+		fclose(file);
+		return texture;
+	}
+
+	fseek(file, data_offset, SEEK_SET);
+	for (i32 i = texture.height - 1; i >= 0; i--)
+	{
+		if (fread(texture.pixels + texture.width*i, sizeof(*texture.pixels), texture.width, file) != texture.width)
+		{
+			free(texture.pixels);
+			texture.pixels = NULL;
+			fclose(file);
+			return texture;
+		}
+	}
+
+	for (i32 i = 0; i < (i32)texture.width*(i32)texture.height; i++)
+	{
+		color old = texture.pixels[i];
+		texture.pixels[i] = Color(old.b, old.g, old.r, old.a);
+	}
+
+	fclose(file);
+	return texture;
+}
+
+void destroyTexture(Texture texture)
+{
+	free(texture.pixels);
+}
+
+color getTexel(const Texture texture, vec2 uv)
+{
+	i32 x = clamp(uv.x*(texture.width - 1), 0, texture.width - 1);
+	i32 y = clamp(uv.y*(texture.height - 1), 0, texture.height - 1);
+	return texture.pixels[y*texture.width + x];
+}
+
 bool initRenderer(const char *title, i32 width, i32 height, i32 scale)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
@@ -169,6 +261,42 @@ void rasterizeFlatTriangle(vec4 p1, vec4 p2, vec4 p3, color color)
 			if (vec2Cross(p1_p, p1_p2) <= 0.f && vec2Cross(p2_p, p2_p3) <= 0.f && vec2Cross(p3_p, p3_p1) <= 0.f)
 			{
 				setPixel(x, y, color, 1.f);
+			}
+		}
+	}
+}
+
+void rasterizeTexturedTriangle(vec4 p1, vec4 p2, vec4 p3, vec2 uv1, vec2 uv2, vec2 uv3, const Texture texture)
+{
+	// TODO optimize
+	f32 min_x = min(min(p1.x, p2.x), p3.x);
+	f32 max_x = max(max(p1.x, p2.x), p3.x);
+	f32 min_y = min(min(p1.y, p2.y), p3.y);
+	f32 max_y = max(max(p1.y, p2.y), p3.y);
+	vec2 p1_small = Vec2(p1.x, p1.y);
+	vec2 p2_small = Vec2(p2.x, p2.y);
+	vec2 p3_small = Vec2(p3.x, p3.y);
+	vec2 p1_p2 = vec2Subtract(p2_small, p1_small);
+	vec2 p2_p3 = vec2Subtract(p3_small, p2_small);
+	vec2 p3_p1 = vec2Subtract(p1_small, p3_small);
+	for (i32 x = min_x; x <= max_x; x++)
+	{
+		for (i32 y = min_y; y <= max_y; y++)
+		{
+			vec2 p = Vec2(x, y);
+			vec2 p1_p = vec2Subtract(p, p1_small);
+			vec2 p2_p = vec2Subtract(p, p2_small);
+			vec2 p3_p = vec2Subtract(p, p3_small);
+			if (vec2Cross(p1_p, p1_p2) <= 0.f && vec2Cross(p2_p, p2_p3) <= 0.f && vec2Cross(p3_p, p3_p1) <= 0.f)
+			{
+				f32 w1 = vec2Cross(p2_p, p3_p);
+				f32 w2 = vec2Cross(p3_p, p1_p);
+				f32 w3 = vec2Cross(p1_p, p2_p);
+				f32 total = w1 + w2 + w3;
+				w1 /= total;
+				w2 /= total;
+				w3 /= total;
+				setPixel(x, y, getTexel(texture, vec2Add(vec2Add(vec2Scale(w1, uv1), vec2Scale(w2, uv2)), vec2Scale(w3, uv3))), 1.f);
 			}
 		}
 	}
