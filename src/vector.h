@@ -98,5 +98,6 @@ quat quatNormalize(quat q);
 vec3 vec3RotateByQuat(vec3 v, quat q);
 
 bool isPointInPlane(vec3 point, plane plane);
+f32 rayVsPlane(vec3 p1, vec3 p2, plane plane);
 
 #endif // VECTOR_H

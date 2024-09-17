@@ -272,3 +272,9 @@ bool isPointInPlane(vec3 point, plane plane)
 	vec3 plane_point = vec3Scale(plane.d, normal);
 	return vec3Dot(normal,  vec3Subtract(point, plane_point)) > 0.f;
 }
+
+f32 rayVsPlane(vec3 p1, vec3 p2, plane plane)
+{
+	vec3 normal = Vec3(plane.nx, plane.ny, plane.nz);
+	return -vec3Dot(p1, normal)/vec3Dot(vec3Subtract(p2, p1), normal);
+}
