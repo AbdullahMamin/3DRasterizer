@@ -17,5 +17,6 @@ typedef float f32;
 typedef double f64;
 
 typedef size_t size;
+typedef ssize_t ssize;
 
 #endif // TYPES_H
