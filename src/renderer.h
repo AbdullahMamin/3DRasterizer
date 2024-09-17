@@ -13,6 +13,19 @@ typedef struct
 
 typedef struct
 {
+	vec4 p1, p2, p3;
+	vec2 uv1, uv2, uv3;
+} Triangle;
+
+typedef struct
+{
+	i32 capacity;
+	i32 n_triangles;
+	Triangle *triangles;
+} TriangleStack;
+
+typedef struct
+{
 	bool open;
 	i32 width, height;
 	SDL_Window *window;
@@ -22,14 +35,26 @@ typedef struct
 	color *frame_buffer;
 	f32 *z_buffer;
 
+	// Used for clipping
+	plane clipping_planes[6]; // left, right, up, down, near, far
+	TriangleStack front_stack;
+	TriangleStack back_stack;
+
 	mat4 camera_transform;
 	mat4 view_transform;
 } Renderer;
 
-// Loads bmp files
-Texture loadTexture(const char *file_path);
+Texture loadTexture(const char *file_path); // Loads bmp files
 void destroyTexture(Texture texture);
 color getTexel(const Texture texture, vec2 uv);
+
+TriangleStack createTriangleStack(i32 capacity);
+bool enlargeTriangleStack(TriangleStack *stack, i32 amount);
+void destroyTriangleStack(TriangleStack *stack);
+bool isTriangleStackFull(const TriangleStack *stack);
+bool isTriangleStackEmpty(const TriangleStack *stack);
+void pushTriangleStack(TriangleStack *stack, Triangle triangle);
+Triangle popTriangleStack(TriangleStack *stack);
 
 bool initRenderer(const char *title, i32 width, i32 height, i32 scale);
 void closeRenderer(void);

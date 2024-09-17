@@ -94,6 +94,60 @@ color getTexel(const Texture texture, vec2 uv)
 	return texture.pixels[y*texture.width + x];
 }
 
+TriangleStack createTriangleStack(i32 capacity)
+{
+	TriangleStack stack;
+	stack.triangles = malloc(capacity*sizeof(*stack.triangles));
+	if (!stack.triangles)
+	{
+		return stack;
+	}
+
+	stack.capacity = capacity;
+	stack.n_triangles = 0;
+	return stack;
+}
+
+bool enlargeTriangleStack(TriangleStack *stack, i32 amount)
+{
+	Triangle *new_triangles = realloc(stack->triangles, (stack->capacity + amount)*sizeof(*new_triangles));
+	if (!new_triangles)
+	{
+		return false;
+	}
+
+	stack->triangles = new_triangles;
+	stack->capacity += amount;
+	return true;
+}
+
+void destroyTriangleStack(TriangleStack *stack)
+{
+	free(stack->triangles);
+}
+
+bool isTriangleStackFull(const TriangleStack *stack)
+{
+	return stack->n_triangles == stack->capacity;
+}
+
+bool isTriangleStackEmpty(const TriangleStack *stack)
+{
+	return stack->n_triangles == 0;
+}
+
+void pushTriangleStack(TriangleStack *stack, Triangle triangle)
+{
+	assert(!isTriangleStackFull(stack));
+	stack->triangles[stack->n_triangles++] = triangle;
+}
+
+Triangle popTriangleStack(TriangleStack *stack)
+{
+	assert(!isTriangleStackEmpty(stack));
+	return stack->triangles[--stack->n_triangles];
+}
+
 bool initRenderer(const char *title, i32 width, i32 height, i32 scale)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
@@ -148,7 +202,34 @@ bool initRenderer(const char *title, i32 width, i32 height, i32 scale)
 	gRenderer.z_buffer = malloc(width*height*sizeof(*gRenderer.z_buffer));
 	if (!gRenderer.z_buffer)
 	{
+		free(gRenderer.frame_buffer);
+		SDL_DestroyTexture(gRenderer.texture);
+		SDL_DestroyRenderer(gRenderer.renderer);
+		SDL_DestroyWindow(gRenderer.window);
+		IMG_Quit();
+		SDL_Quit();
+		return false;
+	}
+
+	gRenderer.front_stack = createTriangleStack(256);
+	if (!gRenderer.front_stack.triangles)
+	{
 		free(gRenderer.z_buffer);
+		free(gRenderer.frame_buffer);
+		SDL_DestroyTexture(gRenderer.texture);
+		SDL_DestroyRenderer(gRenderer.renderer);
+		SDL_DestroyWindow(gRenderer.window);
+		IMG_Quit();
+		SDL_Quit();
+		return false;
+	}
+
+	gRenderer.back_stack = createTriangleStack(256);
+	if (!gRenderer.back_stack.triangles)
+	{
+		destroyTriangleStack(&gRenderer.front_stack);
+		free(gRenderer.z_buffer);
+		free(gRenderer.frame_buffer);
 		SDL_DestroyTexture(gRenderer.texture);
 		SDL_DestroyRenderer(gRenderer.renderer);
 		SDL_DestroyWindow(gRenderer.window);
@@ -166,8 +247,10 @@ bool initRenderer(const char *title, i32 width, i32 height, i32 scale)
 
 void closeRenderer(void)
 {
-	free(gRenderer.frame_buffer);
+	destroyTriangleStack(&gRenderer.back_stack);
+	destroyTriangleStack(&gRenderer.front_stack);
 	free(gRenderer.z_buffer);
+	free(gRenderer.frame_buffer);
 	SDL_DestroyTexture(gRenderer.texture);
 	SDL_DestroyRenderer(gRenderer.renderer);
 	SDL_DestroyWindow(gRenderer.window);
