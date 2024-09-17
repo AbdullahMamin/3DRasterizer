@@ -15,6 +15,9 @@ typedef struct
 	
 	color *frame_buffer;
 	f32 *z_buffer;
+
+	mat4 camera_transform;
+	mat4 view_transform;
 } Renderer;
 
 bool initRenderer(const char *title, i32 width, i32 height, i32 scale);

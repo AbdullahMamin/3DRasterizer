@@ -141,6 +141,6 @@ void blendPixel(i32 x, i32 y, color color, f32 z)
 
 void setCamera(camera camera)
 {
-	// TODO
-	(void)camera;
+	gRenderer.camera_transform = CameraTransform(camera);
+	gRenderer.view_transform = CameraViewTransform(camera);
 }

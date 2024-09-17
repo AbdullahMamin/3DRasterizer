@@ -7,8 +7,10 @@ camera Camera(vec3 position, f32 aspect_ratio, f32 horizontal_fov, f32 pitch, f3
 
 mat4 CameraTransform(camera camera)
 {
-	// TODO rotation
-	return TranslationTransform(-camera.position.x, -camera.position.y, -camera.position.z);
+	quat yaw_rotation = Quat(Vec3(0.f, -1.f, 0.f), camera.yaw);
+	quat pitch_rotation = Quat(vec3RotateByQuat(Vec3(1.f, 0.f, 0.f), yaw_rotation), camera.pitch);
+	quat orientation = quatMultiply(yaw_rotation, pitch_rotation); // TODO check order
+	return mat4Multiply(RotationTransform(quatConjugate(orientation)), TranslationTransform(-camera.position.x, -camera.position.y, -camera.position.z));
 }
 
 mat4 CameraViewTransform(camera camera)
