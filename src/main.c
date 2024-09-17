@@ -13,6 +13,12 @@ int main(void)
 		puts("Couldn't load texture!");
 	}
 
+	Obj obj = loadObj("res/cube.obj");
+	if (!obj.triangles)
+	{
+		puts("Couldn't load object!");
+	}
+
 	camera camera = Camera(Vec3(0.f, 0.f, 0.f), 400.f/300.f, 3.14159f/2.f, 0.f, 0.f, 1e-2f, 1e6f);
 	setCamera(camera);
 
@@ -35,6 +41,7 @@ int main(void)
 		swapBuffers();
 	}
 
+	destroyObj(obj);
 	destroyTexture(text);
 	closeRenderer();
 	return EXIT_SUCCESS;

@@ -94,6 +94,131 @@ color getTexel(const Texture texture, vec2 uv)
 	return texture.pixels[y*texture.width + x];
 }
 
+Obj loadObj(const char *file_path)
+{
+	Obj obj = (Obj){0, NULL};
+	FILE *file = fopen(file_path, "r");
+	if (!file)
+	{
+		return obj;
+	}
+
+	i32 i_triangles = 0;
+	i32 i_vertices = 0;
+	i32 n_vertices = 0;
+	i32 i_uvs = 0;
+	i32 n_uvs = 0;
+	vec4 *vertices;
+	vec2 *uvs;
+
+	char *line = NULL;
+	size n = 0;
+	while (getline(&line, &n, file) != -1)
+	{
+		if (line[0] == 'v' && line[1] == ' ')
+		{
+			// vertex coordinate
+			n_vertices++;
+		}
+		else if (line[0] == 'v' && line[1] == 't')
+		{
+			// texture coordinate
+			n_uvs++;
+		}
+		else if (line[0] == 'f' && line[1] == ' ')
+		{
+			// face element (triangle)
+			obj.n_triangles++;
+		}
+
+		free(line);
+		line = NULL;
+		n = 0;
+	}
+
+	vertices = malloc(n_vertices*sizeof(*vertices));
+	if (!vertices)
+	{
+		fclose(file);
+		return obj;
+	}
+
+	uvs = malloc(n_uvs*sizeof(*uvs));
+	if (!uvs)
+	{
+		free(vertices);
+		fclose(file);
+		return obj;
+	}
+
+	obj.triangles = malloc(obj.n_triangles*sizeof(*obj.triangles));
+	if (!obj.triangles)
+	{
+		free(uvs);
+		free(vertices);
+		return obj;
+	}
+
+	fseek(file, 0, SEEK_SET);
+	line = NULL;
+	n = 0;
+	while (getline(&line, &n, file) != -1)
+	{
+		if (line[0] == 'v' && line[1] == ' ')
+		{
+			// vertex coordinate
+			line[0] = ' ';
+			sscanf(line, "%f %f %f", &vertices[i_vertices].x, &vertices[i_vertices].y, &vertices[i_vertices].z);
+			vertices[i_vertices].w = 1.f;
+			i_vertices++;
+		}
+		else if (line[0] == 'v' && line[1] == 't')
+		{
+			// texture coordinate
+			line[0] = line[1] = ' ';
+			sscanf(line, "%f %f", &uvs[i_uvs].x, &uvs[i_uvs].y);
+			i_uvs++;
+		}
+		else if (line[0] == 'f' && line[1] == ' ')
+		{
+			// face element (triangle)
+			line[0] = ' ';
+			for (i32 i = 0; i < (i32)n; i++)
+			{
+				if (line[i] == '/')
+				{
+					line[i] = ' ';
+				}
+			}
+			i32 p1, uv1, p2, uv2, p3, uv3;
+			sscanf(line, "%d %d %d %d %d %d", &p1, &uv1, &p2, &uv2, &p3, &uv3);
+			obj.triangles[i_triangles] = (Triangle){
+				vertices[p1 - 1],
+				vertices[p2 - 1],
+				vertices[p3 - 1],
+				uvs[uv1 - 1],
+				uvs[uv2 - 1],
+				uvs[uv3 - 1],
+			};
+			i_triangles++;
+		}
+
+		free(line);
+		line = NULL;
+		n = 0;
+	}
+
+	free(uvs);
+	free(vertices);
+	fclose(file);
+	return obj;
+}
+
+void destroyObj(Obj obj)
+{
+	free(obj.triangles);
+}
+
 TriangleStack createTriangleStack(i32 capacity)
 {
 	TriangleStack stack;

@@ -1,5 +1,6 @@
 #ifndef RENDERER_H
 #define RENDERER_H
+#define _GNU_SOURCE
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "transform.h"
@@ -10,6 +11,12 @@ typedef struct
 	u32 width, height;
 	color *pixels;
 } Texture;
+
+typedef struct
+{
+	i32 n_triangles;
+	Triangle *triangles;
+} Obj;
 
 typedef struct
 {
@@ -41,6 +48,9 @@ typedef struct
 Texture loadTexture(const char *file_path); // Loads bmp files
 void destroyTexture(Texture texture);
 color getTexel(const Texture texture, vec2 uv);
+
+Obj loadObj(const char *file_path);
+void destroyObj(Obj obj);
 
 TriangleStack createTriangleStack(i32 capacity);
 bool enlargeTriangleStack(TriangleStack *stack, i32 amount);
