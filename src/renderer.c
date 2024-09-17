@@ -148,6 +148,106 @@ Triangle popTriangleStack(TriangleStack *stack)
 	return stack->triangles[--stack->n_triangles];
 }
 
+i32 clipTriangle(Triangle *destination, Triangle triangle_to_be_clipped, plane clipping_plane)
+{
+	i32 inside_count = 0;
+	i32 outside_count = 0;
+	vec3 inside_points[3];
+	vec2 inside_uvs[3];
+	vec3 outside_points[3];
+	vec2 outside_uvs[3];
+	vec3 temp;
+
+	temp = Vec4ToVec3(triangle_to_be_clipped.p1);
+	if (isPointInPlane(temp, clipping_plane))
+	{
+		inside_points[inside_count] = temp;
+		inside_uvs[inside_count++] = triangle_to_be_clipped.uv1;
+	}
+	else
+	{
+		outside_points[outside_count] = temp;
+		outside_uvs[outside_count++] = triangle_to_be_clipped.uv1;
+	}
+	temp = Vec4ToVec3(triangle_to_be_clipped.p2);
+	if (isPointInPlane(temp, clipping_plane))
+	{
+		inside_points[inside_count] = temp;
+		inside_uvs[inside_count++] = triangle_to_be_clipped.uv2;
+	}
+	else
+	{
+		outside_points[outside_count] = temp;
+		outside_uvs[outside_count++] = triangle_to_be_clipped.uv2;
+	}
+	temp = Vec4ToVec3(triangle_to_be_clipped.p3);
+	if (isPointInPlane(temp, clipping_plane))
+	{
+		inside_points[inside_count] = temp;
+		inside_uvs[inside_count++] = triangle_to_be_clipped.uv3;
+	}
+	else
+	{
+		outside_points[outside_count] = temp;
+		outside_uvs[outside_count++] = triangle_to_be_clipped.uv3;
+	}
+
+	if (inside_count == 0)
+	{
+		return 0;
+	}
+
+	if (inside_count == 3)
+	{
+		destination[0] = triangle_to_be_clipped;
+		return 1;
+	}
+
+	if (inside_count == 1)
+	{
+		Triangle tri;
+		f32 t1 = rayVsPlane(inside_points[0], outside_points[0], clipping_plane);
+		f32 t2 = rayVsPlane(inside_points[0], outside_points[1], clipping_plane);
+
+		tri.p1 = Vec3ToVec4(inside_points[0]);
+		tri.uv1 = inside_uvs[0];
+		tri.p2 = Vec3ToVec4(vec3Add(inside_points[0], vec3Scale(t1, vec3Subtract(outside_points[0], inside_points[0]))));
+		tri.uv2 = vec2Add(inside_uvs[0], vec2Scale(t1, vec2Subtract(outside_uvs[0], inside_uvs[0])));
+		tri.p3 = Vec3ToVec4(vec3Add(inside_points[0], vec3Scale(t2, vec3Subtract(outside_points[1], inside_points[0]))));
+		tri.uv3 = vec2Add(inside_uvs[0], vec2Scale(t2, vec2Subtract(outside_uvs[1], inside_uvs[0])));
+
+		destination[0] = tri;
+		return 1;
+	}
+
+	// if (inside_count == 2)
+
+	Triangle tri1, tri2;
+	f32 t1 = rayVsPlane(inside_points[0], outside_points[0], clipping_plane);
+	f32 t2 = rayVsPlane(inside_points[1], outside_points[0], clipping_plane);
+
+	vec4 common_p = Vec3ToVec4(vec3Add(inside_points[0], vec3Scale(t1, vec3Subtract(outside_points[0], inside_points[0]))));
+	vec2 common_uv = vec2Add(inside_uvs[0], vec2Scale(t1, vec2Subtract(outside_uvs[0], inside_uvs[0])));
+
+	tri1.p1 = Vec3ToVec4(inside_points[0]);
+	tri1.uv1 = inside_uvs[0];
+	tri1.p2 = Vec3ToVec4(inside_points[1]);
+	tri1.uv2 = inside_uvs[1];
+	tri1.p3 = common_p;
+	tri1.uv3 = common_uv;
+
+	tri2.p1 = Vec3ToVec4(inside_points[1]);
+	tri2.uv1 = inside_uvs[1];
+	tri2.p2 = Vec3ToVec4(vec3Add(inside_points[1], vec3Scale(t2, vec3Subtract(outside_points[0], inside_points[1]))));
+	tri2.uv2 = vec2Add(inside_uvs[1], vec2Scale(t2, vec2Subtract(outside_uvs[0], inside_uvs[1])));
+	tri2.p3 = common_p;
+	tri2.uv3 = common_uv;
+	
+	destination[0] = tri1;
+	destination[1] = tri2;
+	return 2;
+}
+
 bool initRenderer(const char *title, i32 width, i32 height, i32 scale)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
@@ -316,6 +416,7 @@ void blendPixel(i32 x, i32 y, color color, f32 z)
 
 void setCamera(camera camera)
 {
+	// TODO set clipping planes
 	gRenderer.camera_transform = CameraTransform(camera);
 	gRenderer.view_transform = CameraViewTransform(camera);
 }

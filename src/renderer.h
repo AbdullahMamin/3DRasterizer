@@ -56,6 +56,8 @@ bool isTriangleStackEmpty(const TriangleStack *stack);
 void pushTriangleStack(TriangleStack *stack, Triangle triangle);
 Triangle popTriangleStack(TriangleStack *stack);
 
+i32 clipTriangle(Triangle *destination, Triangle triangle_to_be_clipped, plane clipping_plane);
+
 bool initRenderer(const char *title, i32 width, i32 height, i32 scale);
 void closeRenderer(void);
 void clearBuffer(color color);
