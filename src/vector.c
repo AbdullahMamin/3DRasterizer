@@ -265,3 +265,10 @@ vec3 vec3RotateByQuat(vec3 v, quat q)
 	v_as_quat = quatMultiply(quatMultiply(q, v_as_quat), quatConjugate(q));
 	return (vec3){v_as_quat.x, v_as_quat.y, v_as_quat.z};
 }
+
+bool isPointInPlane(vec3 point, plane plane)
+{
+	vec3 normal = Vec3(plane.nx, plane.ny, plane.nz);
+	vec3 plane_point = vec3Scale(plane.d, normal);
+	return vec3Dot(normal,  vec3Subtract(point, plane_point)) > 0.f;
+}

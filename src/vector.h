@@ -97,4 +97,6 @@ f32 quatMagnitude(quat q);
 quat quatNormalize(quat q);
 vec3 vec3RotateByQuat(vec3 v, quat q);
 
+bool isPointInPlane(vec3 point, plane plane);
+
 #endif // VECTOR_H
