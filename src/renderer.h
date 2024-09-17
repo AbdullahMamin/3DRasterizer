@@ -31,4 +31,7 @@ void setPixel(i32 x, i32 y, color color, f32 z);
 void blendPixel(i32 x, i32 y, color color, f32 z);
 void setCamera(camera camera);
 
+// All triangles drawn must have clockwise winding
+void rasterizeFlatTriangle(vec4 p1, vec4 p2, vec4 p3, color color);
+
 #endif // RENDERER_H

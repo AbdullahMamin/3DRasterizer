@@ -19,6 +19,7 @@ int main(void)
 				blendPixel(i, j, Color(0, 255, 0, clamp(10000.f/(i*j), 0, 255)), 1.f);
 			}
 		}
+		rasterizeFlatTriangle(Vec4(100.f, 0.f, 0.f, 1.f), Vec4(200.f, 100.f, 0.f, 1.f), Vec4(100.f, 100.f, 0.f, 1.f), Color(0, 0, 255, 255));
 		swapBuffers();
 	}
 

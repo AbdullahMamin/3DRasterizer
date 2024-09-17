@@ -144,3 +144,32 @@ void setCamera(camera camera)
 	gRenderer.camera_transform = CameraTransform(camera);
 	gRenderer.view_transform = CameraViewTransform(camera);
 }
+
+void rasterizeFlatTriangle(vec4 p1, vec4 p2, vec4 p3, color color)
+{
+	// TODO optimize
+	f32 min_x = min(min(p1.x, p2.x), p3.x);
+	f32 max_x = max(max(p1.x, p2.x), p3.x);
+	f32 min_y = min(min(p1.y, p2.y), p3.y);
+	f32 max_y = max(max(p1.y, p2.y), p3.y);
+	vec2 p1_small = Vec2(p1.x, p1.y);
+	vec2 p2_small = Vec2(p2.x, p2.y);
+	vec2 p3_small = Vec2(p3.x, p3.y);
+	vec2 p1_p2 = vec2Subtract(p2_small, p1_small);
+	vec2 p2_p3 = vec2Subtract(p3_small, p2_small);
+	vec2 p3_p1 = vec2Subtract(p1_small, p3_small);
+	for (i32 x = min_x; x <= max_x; x++)
+	{
+		for (i32 y = min_y; y <= max_y; y++)
+		{
+			vec2 p = Vec2(x, y);
+			vec2 p1_p = vec2Subtract(p, p1_small);
+			vec2 p2_p = vec2Subtract(p, p2_small);
+			vec2 p3_p = vec2Subtract(p, p3_small);
+			if (vec2Cross(p1_p, p1_p2) <= 0.f && vec2Cross(p2_p, p2_p3) <= 0.f && vec2Cross(p3_p, p3_p1) <= 0.f)
+			{
+				setPixel(x, y, color, 1.f);
+			}
+		}
+	}
+}
