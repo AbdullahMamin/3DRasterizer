@@ -577,7 +577,7 @@ void rasterizeFlatTriangle(vec4 p1, vec4 p2, vec4 p3, color color)
 			vec2 p1_p = vec2Subtract(p, p1_small);
 			vec2 p2_p = vec2Subtract(p, p2_small);
 			vec2 p3_p = vec2Subtract(p, p3_small);
-			if (vec2Cross(p1_p, p1_p2) <= 0.f && vec2Cross(p2_p, p2_p3) <= 0.f && vec2Cross(p3_p, p3_p1) <= 0.f)
+			if ((vec2Cross(p1_p, p1_p2) <= 0.f && vec2Cross(p2_p, p2_p3) <= 0.f && vec2Cross(p3_p, p3_p1) <= 0.f) || (vec2Cross(p1_p, p1_p2) >= 0.f && vec2Cross(p2_p, p2_p3) >= 0.f && vec2Cross(p3_p, p3_p1) >= 0.f))
 			{
 				setPixel(x, y, color, 1.f);
 			}
@@ -606,7 +606,7 @@ void rasterizeTexturedTriangle(vec4 p1, vec4 p2, vec4 p3, vec2 uv1, vec2 uv2, ve
 			vec2 p1_p = vec2Subtract(p, p1_small);
 			vec2 p2_p = vec2Subtract(p, p2_small);
 			vec2 p3_p = vec2Subtract(p, p3_small);
-			if (vec2Cross(p1_p, p1_p2) <= 0.f && vec2Cross(p2_p, p2_p3) <= 0.f && vec2Cross(p3_p, p3_p1) <= 0.f)
+			if ((vec2Cross(p1_p, p1_p2) <= 0.f && vec2Cross(p2_p, p2_p3) <= 0.f && vec2Cross(p3_p, p3_p1) <= 0.f) || (vec2Cross(p1_p, p1_p2) >= 0.f && vec2Cross(p2_p, p2_p3) >= 0.f && vec2Cross(p3_p, p3_p1) >= 0.f))
 			{
 				f32 w1 = vec2Cross(p2_p, p3_p);
 				f32 w2 = vec2Cross(p3_p, p1_p);
