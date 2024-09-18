@@ -77,5 +77,6 @@ void rasterizeFlatTriangle(vec4 p1, vec4 p2, vec4 p3, color color);
 void rasterizeTexturedTriangle(vec4 p1, vec4 p2, vec4 p3, vec2 uv1, vec2 uv2, vec2 uv3, const Texture texture);
 
 void drawFlatObj(const Obj obj, mat4 transform, color color);
+void drawTexturedObj(const Obj obj, mat4 transform, const Texture texture);
 
 #endif // RENDERER_H

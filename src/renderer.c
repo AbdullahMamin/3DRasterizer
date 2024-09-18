@@ -582,7 +582,15 @@ void rasterizeFlatTriangle(vec4 p1, vec4 p2, vec4 p3, color color)
 			vec2 p3_p = vec2Subtract(p, p3_small);
 			if ((vec2Cross(p1_p, p1_p2) <= 0.f && vec2Cross(p2_p, p2_p3) <= 0.f && vec2Cross(p3_p, p3_p1) <= 0.f) || (vec2Cross(p1_p, p1_p2) >= 0.f && vec2Cross(p2_p, p2_p3) >= 0.f && vec2Cross(p3_p, p3_p1) >= 0.f))
 			{
-				setPixel(x, y, color, 1.f);
+				f32 w1 = vec2Cross(p2_p, p3_p);
+				f32 w2 = vec2Cross(p3_p, p1_p);
+				f32 w3 = vec2Cross(p1_p, p2_p);
+				f32 total = w1 + w2 + w3;
+				w1 /= total;
+				w2 /= total;
+				w3 /= total;
+				f32 inv_z = w1/p1.w + w2/p2.w + w3/p3.w;
+				setPixel(x, y, color, 1.f/inv_z);
 			}
 		}
 	}
@@ -618,7 +626,8 @@ void rasterizeTexturedTriangle(vec4 p1, vec4 p2, vec4 p3, vec2 uv1, vec2 uv2, ve
 				w1 /= total;
 				w2 /= total;
 				w3 /= total;
-				setPixel(x, y, getTexel(texture, vec2Add(vec2Add(vec2Scale(w1, uv1), vec2Scale(w2, uv2)), vec2Scale(w3, uv3))), 1.f);
+				f32 inv_z = w1/p1.w + w2/p2.w + w3/p3.w;
+				setPixel(x, y, getTexel(texture, vec2Add(vec2Add(vec2Scale(w1, uv1), vec2Scale(w2, uv2)), vec2Scale(w3, uv3))), 1.f/inv_z);
 			}
 		}
 	}
@@ -642,5 +651,18 @@ void drawFlatObj(const Obj obj, mat4 transform, color color)
 		triangle = transformTriangle(triangle, gRenderer.view_transform);
 		triangle = perspectiveDivideTriangle(triangle);
 		rasterizeFlatTriangle(ndcToScreen(triangle.p1), ndcToScreen(triangle.p2), ndcToScreen(triangle.p3), color);
+	}
+}
+
+void drawTexturedObj(const Obj obj, mat4 transform, const Texture texture)
+{
+	transform = mat4Multiply(gRenderer.camera_transform, transform);
+	for (i32 i = 0; i < obj.n_triangles; i++)
+	{
+		Triangle triangle = transformTriangle(obj.triangles[i], transform);
+		// TODO clipping and back face culling
+		triangle = transformTriangle(triangle, gRenderer.view_transform);
+		triangle = perspectiveDivideTriangle(triangle);
+		rasterizeTexturedTriangle(ndcToScreen(triangle.p1), ndcToScreen(triangle.p2), ndcToScreen(triangle.p3), triangle.uv1, triangle.uv2, triangle.uv3, texture);
 	}
 }
