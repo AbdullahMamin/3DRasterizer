@@ -1,4 +1,5 @@
 #ifndef VECTOR_H
+#define VECTOR_H
 #include <assert.h>
 #include <math.h>
 #include "types.h"
