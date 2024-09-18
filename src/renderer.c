@@ -169,6 +169,7 @@ Obj loadObj(const char *file_path)
 			// vertex coordinate
 			line[0] = ' ';
 			sscanf(line, "%f %f %f", &vertices[i_vertices].x, &vertices[i_vertices].y, &vertices[i_vertices].z);
+			// printf("%f %f %f\n", vertices[i_vertices].x, vertices[i_vertices].y, vertices[i_vertices].z);
 			vertices[i_vertices].w = 1.f;
 			i_vertices++;
 		}
@@ -177,6 +178,7 @@ Obj loadObj(const char *file_path)
 			// texture coordinate
 			line[0] = line[1] = ' ';
 			sscanf(line, "%f %f", &uvs[i_uvs].x, &uvs[i_uvs].y);
+			// printf("%f %f\n", uvs[i_uvs].x, uvs[i_uvs].y);
 			i_uvs++;
 		}
 		else if (line[0] == 'f' && line[1] == ' ')
@@ -192,6 +194,7 @@ Obj loadObj(const char *file_path)
 			}
 			i32 p1, uv1, p2, uv2, p3, uv3;
 			sscanf(line, "%d %d %d %d %d %d", &p1, &uv1, &p2, &uv2, &p3, &uv3);
+			// printf("%d %d %d %d %d %d\n", p1, uv1, p2, uv2, p3, uv3);
 			obj.triangles[i_triangles] = (Triangle){
 				vertices[p1 - 1],
 				vertices[p2 - 1],
@@ -618,5 +621,26 @@ void rasterizeTexturedTriangle(vec4 p1, vec4 p2, vec4 p3, vec2 uv1, vec2 uv2, ve
 				setPixel(x, y, getTexel(texture, vec2Add(vec2Add(vec2Scale(w1, uv1), vec2Scale(w2, uv2)), vec2Scale(w3, uv3))), 1.f);
 			}
 		}
+	}
+}
+
+// utility function to transform NDC coordinate into screen coordinate
+vec4 ndcToScreen(vec4 p)
+{
+	// return Vec4((p.x + 1.f)/2.f*(gRenderer.width - 1), (p.y + 1.f)/2.f*(gRenderer.height - 1), p.z, p.w);
+	return Vec4((p.x + 0.5f)*(gRenderer.width - 1), (p.y + 0.5f)*(gRenderer.height - 1), p.z, p.w);
+	return p;
+}
+
+void drawFlatObj(const Obj obj, mat4 transform, color color)
+{
+	transform = mat4Multiply(gRenderer.camera_transform, transform);
+	for (i32 i = 0; i < obj.n_triangles; i++)
+	{
+		Triangle triangle = transformTriangle(obj.triangles[i], transform);
+		// TODO clipping and back face culling
+		triangle = transformTriangle(triangle, gRenderer.view_transform);
+		triangle = perspectiveDivideTriangle(triangle);
+		rasterizeFlatTriangle(ndcToScreen(triangle.p1), ndcToScreen(triangle.p2), ndcToScreen(triangle.p3), color);
 	}
 }
