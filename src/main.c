@@ -37,8 +37,8 @@ int main(void)
 
 		// Update
 		f32 delta_time = getDeltaTime();
-		quat rot1 = Quat(Vec3(1.f, 0.f, 0.f), 0*1.f*delta_time);
-		quat rot2 = Quat(Vec3(0.f, 1.f, 0.f), 0*0.5f*delta_time);
+		quat rot1 = Quat(Vec3(1.f, 0.f, 0.f), 1.f*delta_time);
+		quat rot2 = Quat(Vec3(0.f, 1.f, 0.f), 0.5f*delta_time);
 		quat rotation = quatMultiply(rot1, rot2);
 		orientation = quatNormalize(quatMultiply(orientation, rotation));
 		mat4 transform = mat4Multiply(TranslationTransform(0.f, 0.f, 15.f), mat4Multiply(RotationTransform(orientation), ScaleTransform(2.f, 2.f, 2.f)));
