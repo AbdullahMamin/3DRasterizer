@@ -81,6 +81,14 @@ int main(void)
 		vec2 camera_movement = getMouseRelative();
 		camera.yaw -= camera_sensetivity*camera_movement.x*delta_time;
 		camera.pitch -= camera_sensetivity*camera_movement.y*delta_time;
+		if (camera.pitch > 3.14159/2.f)
+		{
+			camera.pitch = 3.14159/2.f;
+		}
+		else if (camera.pitch < -3.14159/2.f)
+		{
+			camera.pitch = -3.14159/2.f;
+		}
 		if (isKeyDown("R"))
 		{
 			camera.position = Vec3(0.f, 0.f, 0.f);
