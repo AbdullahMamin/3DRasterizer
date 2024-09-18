@@ -41,7 +41,8 @@ int main(void)
 		
 
 		clearBuffer(Color(0, 0, 0, 255));
-		drawFlatObj(obj, transform, Color(255, 0, 0, 255));
+		// drawFlatObj(obj, transform, Color(255, 0, 0, 255));
+		drawTexturedObj(obj, transform, text);
 		swapBuffers();
 	}
 
