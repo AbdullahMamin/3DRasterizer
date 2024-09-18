@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <math.h>
 #include "types.h"
+#include <stdio.h>
 
 typedef struct
 {
@@ -105,5 +106,7 @@ vec3 vec3RotateByQuat(vec3 v, quat q);
 
 bool isPointInPlane(vec3 point, plane plane);
 f32 rayVsPlane(vec3 p1, vec3 p2, plane plane);
+
+void printMat4(mat4 m);
 
 #endif // VECTOR_H

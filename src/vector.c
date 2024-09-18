@@ -278,3 +278,14 @@ f32 rayVsPlane(vec3 p1, vec3 p2, plane plane)
 	vec3 normal = Vec3(plane.nx, plane.ny, plane.nz);
 	return -vec3Dot(p1, normal)/vec3Dot(vec3Subtract(p2, p1), normal);
 }
+
+void printMat4(mat4 m)
+{
+	printf("%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n",
+		m.a11, m.a12, m.a13, m.a14,
+		m.a21, m.a22, m.a23, m.a24,
+		m.a31, m.a32, m.a33, m.a34,
+		m.a41, m.a42, m.a43, m.a44
+	);
+	puts("----");
+}
