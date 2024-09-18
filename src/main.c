@@ -15,7 +15,7 @@ int main(void)
 		puts("Couldn't load texture!");
 	}
 
-	Obj obj = loadObj("res/cube.obj");
+	Obj obj = loadObj("res/sphere.obj");
 	if (!obj.triangles)
 	{
 		puts("Couldn't load object!");
@@ -37,6 +37,7 @@ int main(void)
 
 		// Update
 		f32 delta_time = getDeltaTime();
+		printf("Approximate FPS: %f                    \r", 1.f/delta_time);
 		quat rot1 = Quat(Vec3(1.f, 0.f, 0.f), 1.f*delta_time);
 		quat rot2 = Quat(Vec3(0.f, 1.f, 0.f), 0.5f*delta_time);
 		quat rotation = quatMultiply(rot1, rot2);
