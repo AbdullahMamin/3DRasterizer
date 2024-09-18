@@ -17,3 +17,15 @@ bool isKeyDown(const char *key_name)
 	}
 	return gKeyboardState[sc];
 }
+
+void setMouseRelative(bool set)
+{
+	SDL_SetRelativeMouseMode(set);
+}
+
+vec2 getMouseRelative(void)
+{
+	i32 x, y;
+	SDL_GetRelativeMouseState(&x, &y);
+	return Vec2(x, y);
+}
