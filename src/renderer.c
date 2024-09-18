@@ -626,8 +626,11 @@ void rasterizeTexturedTriangle(vec4 p1, vec4 p2, vec4 p3, vec2 uv1, vec2 uv2, ve
 				w1 /= total;
 				w2 /= total;
 				w3 /= total;
-				f32 inv_z = w1/p1.w + w2/p2.w + w3/p3.w;
-				setPixel(x, y, getTexel(texture, vec2Add(vec2Add(vec2Scale(w1, uv1), vec2Scale(w2, uv2)), vec2Scale(w3, uv3))), 1.f/inv_z);
+				f32 inv_z1 = w1/p1.w;
+				f32 inv_z2 = w2/p2.w;
+				f32 inv_z3 = w3/p3.w;
+				f32 z = 1.f/(inv_z1 + inv_z2 + inv_z3);
+				setPixel(x, y, getTexel(texture, vec2Scale(z, vec2Add(vec2Add(vec2Scale(inv_z1, uv1), vec2Scale(inv_z2, uv2)), vec2Scale(inv_z3, uv3)))), z);
 			}
 		}
 	}
