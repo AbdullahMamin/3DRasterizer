@@ -9,7 +9,7 @@ mat4 CameraTransform(camera camera)
 {
 	quat yaw_rotation = Quat(Vec3(0.f, -1.f, 0.f), camera.yaw);
 	quat pitch_rotation = Quat(vec3RotateByQuat(Vec3(1.f, 0.f, 0.f), yaw_rotation), camera.pitch);
-	quat orientation = quatMultiply(yaw_rotation, pitch_rotation); // TODO check order
+	quat orientation = quatMultiply(pitch_rotation, yaw_rotation);
 	mat4 result = mat4Multiply(RotationTransform(quatConjugate(orientation)), TranslationTransform(-camera.position.x, -camera.position.y, -camera.position.z));
 	return result;
 }
