@@ -20,5 +20,7 @@ mat4 TranslationTransform(f32 x, f32 y, f32 z);
 mat4 RotationTransform(quat q);
 
 vec4 vec4PerspectiveDivide(vec4 v);
+Triangle perspectiveDivideTriangle(Triangle triangle);
+Triangle transformTriangle(Triangle triangle, mat4 transform);
 
 #endif // TRANSFORM_H
