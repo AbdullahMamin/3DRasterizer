@@ -668,12 +668,19 @@ void drawFlatObj(const Obj obj, mat4 transform, color color)
 	transform = mat4Multiply(gRenderer.camera_transform, transform);
 	for (i32 i = 0; i < obj.n_triangles; i++)
 	{
-		// TODO back face culling
-		if (isTriangleStackFull(&gRenderer.front_stack))
+		Triangle triangle = transformTriangle(obj.triangles[i], transform);
+		Triangle test = perspectiveDivideTriangle(transformTriangle(triangle, gRenderer.view_transform));
+		vec3 p1 = Vec4ToVec3(test.p1);
+		vec3 p2 = Vec4ToVec3(test.p2);
+		vec3 p3 = Vec4ToVec3(test.p3);
+		if (vec3Cross(vec3Subtract(p3, p1), vec3Subtract(p2, p1)).z > 0.f)
 		{
-			enlargeTriangleStack(&gRenderer.front_stack, gRenderer.front_stack.capacity);
+			if (isTriangleStackFull(&gRenderer.front_stack))
+			{
+				enlargeTriangleStack(&gRenderer.front_stack, gRenderer.front_stack.capacity);
+			}
+			pushTriangleStack(&gRenderer.front_stack, triangle);
 		}
-		pushTriangleStack(&gRenderer.front_stack, transformTriangle(obj.triangles[i], transform));
 	}
 	for (i32 i = 0; i < 6; i++)
 	{
@@ -691,12 +698,19 @@ void drawTexturedObj(const Obj obj, mat4 transform, const Texture texture)
 	transform = mat4Multiply(gRenderer.camera_transform, transform);
 	for (i32 i = 0; i < obj.n_triangles; i++)
 	{
-		// TODO back face culling
-		if (isTriangleStackFull(&gRenderer.front_stack))
+		Triangle triangle = transformTriangle(obj.triangles[i], transform);
+		Triangle test = perspectiveDivideTriangle(transformTriangle(triangle, gRenderer.view_transform));
+		vec3 p1 = Vec4ToVec3(test.p1);
+		vec3 p2 = Vec4ToVec3(test.p2);
+		vec3 p3 = Vec4ToVec3(test.p3);
+		if (vec3Cross(vec3Subtract(p3, p1), vec3Subtract(p2, p1)).z > 0.f)
 		{
-			enlargeTriangleStack(&gRenderer.front_stack, gRenderer.front_stack.capacity);
+			if (isTriangleStackFull(&gRenderer.front_stack))
+			{
+				enlargeTriangleStack(&gRenderer.front_stack, gRenderer.front_stack.capacity);
+			}
+			pushTriangleStack(&gRenderer.front_stack, triangle);
 		}
-		pushTriangleStack(&gRenderer.front_stack, transformTriangle(obj.triangles[i], transform));
 	}
 	for (i32 i = 0; i < 6; i++)
 	{
