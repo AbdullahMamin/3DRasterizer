@@ -64,7 +64,15 @@ int main(void)
 		{
 			velocity.x += 1.f;
 		}
-		if (velocity.x != 0.f || velocity.z != 0.f)
+		if (isKeyDown("Q"))
+		{
+			velocity.y -= 1.f;
+		}
+		if (isKeyDown("E"))
+		{
+			velocity.y += 1.f;
+		}
+		if (velocity.x != 0.f || velocity.y != 0.f || velocity.z != 0.f)
 		{
 			velocity = vec3Scale(camera_speed, vec3Normalize(velocity));
 			velocity = vec3RotateByQuat(velocity, Quat(Vec3(0.f, -1.f, 0.f), camera.yaw));
