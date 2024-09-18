@@ -376,6 +376,26 @@ i32 clipTriangle(Triangle *destination, Triangle triangle_to_be_clipped, plane c
 	return 2;
 }
 
+void doClippingRound(plane clipping_plane)
+{
+	while (!isTriangleStackEmpty(&gRenderer.front_stack))
+	{
+		Triangle clipped_triangles[2];
+		i32 n_triangles = clipTriangle(clipped_triangles, popTriangleStack(&gRenderer.front_stack), clipping_plane);
+		for (i32 i = 0; i < n_triangles; i++)
+		{
+			if (isTriangleStackFull(&gRenderer.back_stack))
+			{
+				enlargeTriangleStack(&gRenderer.back_stack, gRenderer.back_stack.capacity);
+			}
+			pushTriangleStack(&gRenderer.back_stack, clipped_triangles[i]);
+		}
+	}
+	TriangleStack temp = gRenderer.front_stack;
+	gRenderer.front_stack = gRenderer.back_stack;
+	gRenderer.back_stack = temp;
+}
+
 bool initRenderer(const char *title, i32 width, i32 height, i32 scale)
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
@@ -641,7 +661,6 @@ vec4 ndcToScreen(vec4 p)
 {
 	// return Vec4((p.x + 1.f)/2.f*(gRenderer.width - 1), (p.y + 1.f)/2.f*(gRenderer.height - 1), p.z, p.w);
 	return Vec4((p.x + 0.5f)*(gRenderer.width - 1), (p.y + 0.5f)*(gRenderer.height - 1), p.z, p.w);
-	return p;
 }
 
 void drawFlatObj(const Obj obj, mat4 transform, color color)
@@ -649,10 +668,20 @@ void drawFlatObj(const Obj obj, mat4 transform, color color)
 	transform = mat4Multiply(gRenderer.camera_transform, transform);
 	for (i32 i = 0; i < obj.n_triangles; i++)
 	{
-		Triangle triangle = transformTriangle(obj.triangles[i], transform);
-		// TODO clipping and back face culling
-		triangle = transformTriangle(triangle, gRenderer.view_transform);
-		triangle = perspectiveDivideTriangle(triangle);
+		// TODO back face culling
+		if (isTriangleStackFull(&gRenderer.front_stack))
+		{
+			enlargeTriangleStack(&gRenderer.front_stack, gRenderer.front_stack.capacity);
+		}
+		pushTriangleStack(&gRenderer.front_stack, transformTriangle(obj.triangles[i], transform));
+	}
+	for (i32 i = 0; i < 6; i++)
+	{
+		doClippingRound(gRenderer.clipping_planes[i]);
+	}
+	while (!isTriangleStackEmpty(&gRenderer.front_stack))
+	{
+		Triangle triangle = perspectiveDivideTriangle(transformTriangle(popTriangleStack(&gRenderer.front_stack), gRenderer.view_transform));
 		rasterizeFlatTriangle(ndcToScreen(triangle.p1), ndcToScreen(triangle.p2), ndcToScreen(triangle.p3), color);
 	}
 }
@@ -662,10 +691,20 @@ void drawTexturedObj(const Obj obj, mat4 transform, const Texture texture)
 	transform = mat4Multiply(gRenderer.camera_transform, transform);
 	for (i32 i = 0; i < obj.n_triangles; i++)
 	{
-		Triangle triangle = transformTriangle(obj.triangles[i], transform);
-		// TODO clipping and back face culling
-		triangle = transformTriangle(triangle, gRenderer.view_transform);
-		triangle = perspectiveDivideTriangle(triangle);
+		// TODO back face culling
+		if (isTriangleStackFull(&gRenderer.front_stack))
+		{
+			enlargeTriangleStack(&gRenderer.front_stack, gRenderer.front_stack.capacity);
+		}
+		pushTriangleStack(&gRenderer.front_stack, transformTriangle(obj.triangles[i], transform));
+	}
+	for (i32 i = 0; i < 6; i++)
+	{
+		doClippingRound(gRenderer.clipping_planes[i]);
+	}
+	while (!isTriangleStackEmpty(&gRenderer.front_stack))
+	{
+		Triangle triangle = perspectiveDivideTriangle(transformTriangle(popTriangleStack(&gRenderer.front_stack), gRenderer.view_transform));
 		rasterizeTexturedTriangle(ndcToScreen(triangle.p1), ndcToScreen(triangle.p2), ndcToScreen(triangle.p3), triangle.uv1, triangle.uv2, triangle.uv3, texture);
 	}
 }
