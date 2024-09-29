@@ -15,9 +15,6 @@ DEPENDS := $(patsubst %.c, %.d, $(SOURCES))
 
 all: $(OUTPUT)
 
-install: all
-	sudo mv $(OUTPUT) /usr/bin/makina2d
-
 clean:
 	rm -rf $(OUTPUT) $(OBJECTS) $(DEPENDS)
 
